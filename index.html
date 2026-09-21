@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+<meta name="theme-color" content="#0f172a">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
+<title>Dashboard de BDs</title>
+
+<link rel="stylesheet" href="./assets/css/styles.css">
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+
+<div>
+<h1>RELATÓRIO DIÁRIO DE BDs</h1>
+<p>Acompanhamento dos reparos — Secretaria da Educação</p>
+</div>
+
+<div class="header-meta"><div class="date-card"><small>DATA</small><strong id="currentDate">--/--/----</strong></div><div class="date-card"><small>ÚLTIMA ATUALIZAÇÃO</small><strong id="lastUpdate">--:--</strong></div></div>
+<button type="button" class="theme-toggle" id="btnTema" aria-pressed="false" aria-label="Ativar modo escuro"><span class="theme-icon" aria-hidden="true">☾</span><span class="theme-label">Modo escuro</span></button>
+<div class="system">
+<span class="dot"></span>
+ <span id="systemStatus">Sistema operacional</span>
+</div>
+
+</header>
+
+<section class="cards">
+
+<div class="card">
+<div class="card-top">
+<span class="card-title">TOTAL DE REPAROS</span>
+<span class="icon">▣</span>
+</div>
+<div class="card-number" id="totalReparos">0</div>
+<div class="card-sub">Registros cadastrados</div>
+</div>
+
+<div class="card">
+<div class="card-top">
+<span class="card-title">O&M SPI</span>
+<span class="icon">O</span>
+</div>
+<div class="card-number" id="totalOMSPI">0</div>
+<div class="card-sub">Reparos O&M SPI</div>
+</div>
+
+<div class="card">
+<div class="card-top">
+<span class="card-title">SWT</span>
+<span class="icon">S</span>
+</div>
+<div class="card-number" id="totalSWT">0</div>
+<div class="card-sub">Reparos SWT</div>
+</div>
+
+<div class="card">
+<div class="card-top">
+<span class="card-title">GPON</span>
+<span class="icon">G</span>
+</div>
+<div class="card-number" id="totalGPON">0</div>
+<div class="card-sub">Reparos GPON</div>
+</div>
+
+<div class="card">
+<div class="card-top">
+<span class="card-title">GTD</span>
+<span class="icon">G</span>
+</div>
+<div class="card-number" id="totalGTD">0</div>
+<div class="card-sub">Reparos GTD</div>
+</div>
+
+</section>
+
+<section class="main-grid">
+
+<div class="panel">
+
+<div class="panel-header">
+<h2>Indicadores</h2>
+<p>Visão geral do Aging</p>
+</div>
+
+<div class="aging">
+
+<div class="aging-item">
+<div class="aging-label">Até 04H</div>
+<div class="aging-value" id="aging04h">0</div>
+<div class="bar"><span id="bar04h"></span></div>
+</div>
+
+<div class="aging-item">
+<div class="aging-label">Até 12H</div>
+<div class="aging-value" id="aging12h">0</div>
+<div class="bar"><span id="bar12h"></span></div>
+</div>
+
+<div class="aging-item">
+<div class="aging-label">Até 24H</div>
+<div class="aging-value" id="aging24h">0</div>
+<div class="bar"><span id="bar24h"></span></div>
+</div>
+
+<div class="aging-item">
+<div class="aging-label">Mais de 1 Dia</div>
+<div class="aging-value" id="aging1d">0</div>
+<div class="bar"><span id="bar1d"></span></div>
+</div>
+
+<div class="aging-item">
+<div class="aging-label">Mais de 2 Dias</div>
+<div class="aging-value" id="aging2d">0</div>
+<div class="bar"><span id="bar2d"></span></div>
+</div>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<div class="panel-header">
+<h2>Status</h2>
+<p>Situação atual dos reparos</p>
+</div>
+
+<div class="status">
+
+<div class="status-row">
+<div class="status-left">
+<span class="status-dot green"></span>
+Em atendimento
+</div>
+<b id="statusAtendimento">0</b>
+</div>
+
+<div class="status-row">
+<div class="status-left">
+<span class="status-dot orange"></span>
+Aguardando
+</div>
+<b id="statusAguardando">0</b>
+</div>
+
+<div class="status-row">
+<div class="status-left">
+<span class="status-dot red"></span>
+Sem previsão
+</div>
+<b id="statusSemPrevisao">0</b>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="panel">
+
+<div class="controls">
+
+<input
+id="pesquisa"
+class="search"
+type="search"
+autocomplete="off"
+placeholder="Pesquisar Grupo, Produto, BD, Cliente, Prazo, Cidade ou Atualização..."
+>
+
+<select id="filtroStatus" class="control-select" aria-label="Filtrar por status">
+<option value="">Todos os status</option>
+<option value="Aguardando">Aguardando</option>
+<option value="Em atendimento">Em atendimento</option>
+<option value="Sem previsão">Sem previsão</option>
+</select>
+
+<button type="button" class="button button-light" id="btnLimparPesquisa">Limpar</button>
+
+<button type="button" class="button" id="btnNovo">+ Cadastrar reparo</button>
+<button type="button" class="button" id="btnAnalisarPrint">Importar Excel</button>
+<button type="button" class="button" id="btnAtualizar">Atualizar</button>
+<button type="button" class="button button-danger" id="btnExcluirTodos">Excluir todos os reparos</button>
+
+</div>
+
+<div class="table-summary" id="tableSummary" aria-live="polite"></div>
+
+<div class="table-wrap">
+
+<table>
+
+<thead>
+<tr>
+<th>GRUPO</th>
+<th>PRODUTO</th>
+<th>BD</th>
+<th>CLIENTE</th>
+<th>PRAZO</th>
+<th>CIDADE</th>
+<th>STATUS</th>
+<th>DATA/HORA</th>
+<th>ATUALIZAÇÃO</th>
+<th>AÇÕES</th>
+</tr>
+</thead>
+
+<tbody id="tabelaBody"></tbody>
+
+</table>
+
+<div
+id="emptyState"
+class="empty-state"
+>
+Nenhum registro encontrado.
+</div>
+
+</div>
+
+</section>
+
+</div>
+
+<div
+class="modal"
+id="modal"
+aria-hidden="true"
+>
+
+<div
+class="modal-content"
+role="dialog"
+aria-modal="true"
+aria-labelledby="modalTitle"
+>
+
+<div
+class="modal-title"
+id="modalTitle"
+>
+Cadastrar reparo
+</div>
+
+<div class="form-group">
+
+<label for="grupo">
+Grupo responsável
+</label>
+
+<select id="grupo">
+
+<option value="">
+Selecione
+</option>
+
+<option value="O&M SPI">
+O&M SPI
+</option>
+
+<option value="SWT">
+SWT
+</option>
+
+<option value="GPON">
+GPON
+</option>
+
+<option value="GTD">
+GTD
+</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label for="produto">
+Produto
+</label>
+
+<input
+id="produto"
+type="text"
+placeholder="Ex.: GPON ou SWT"
+>
+
+</div>
+
+<div class="form-group">
+
+<label for="bd">
+Número do reparo (BD)
+</label>
+
+<input
+id="bd"
+type="text"
+inputmode="numeric"
+placeholder="Ex.: 6828251"
+>
+
+</div>
+
+<div class="form-group">
+
+<label for="cliente">
+Cliente afetado
+</label>
+
+<input
+id="cliente"
+type="text"
+value="Secretaria da Educação"
+>
+
+</div>
+
+<div class="form-group">
+<label for="status">Situação atual</label>
+<select id="status">
+<option value="">Selecione</option>
+<option value="Aguardando">Aguardando</option>
+<option value="Em atendimento">Em atendimento</option>
+<option value="Sem previsão">Sem previsão</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Data e hora de abertura</label>
+<div class="date-time-row">
+<input id="data_relatorio" type="date">
+<input id="hora_relatorio" type="time">
+</div>
+
+
+</div>
+
+<div class="form-group">
+
+<label for="prazo">
+Prazo calculado automaticamente
+</label>
+
+
+
+
+
+</div>
+
+<div class="form-group">
+
+<label for="cidade">
+Cidade do reparo
+</label>
+
+<input
+id="cidade"
+type="text"
+value=""
+>
+
+</div>
+
+<div class="form-group">
+
+<label for="atualizacao">
+Última atualização
+</label>
+
+<textarea
+id="atualizacao"
+placeholder="Ex.: Equipe técnica em deslocamento. Nova previsão às 14h."
+spellcheck="true"
+lang="pt-BR"
+></textarea>
+
+
+</div>
+
+<div class="modal-buttons">
+
+<button
+type="button"
+class="button cancel"
+id="btnCancelar"
+>
+Cancelar
+</button>
+
+<button
+type="button"
+class="button"
+id="btnSalvar"
+>
+Salvar reparo
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="modal" id="modalPrint" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true">
+    <div class="modal-title">Importar reparos do Excel</div>
+    <p class="ocr-help">Selecione uma planilha Excel (.xlsx) ou CSV. Serão importadas somente as colunas <b>Cliente</b> e <b>Número do reparo</b> (ou BD). Os demais dados permanecem em branco para preenchimento posterior.</p>
+    <div class="form-group">
+      <label for="arquivoPrint">Arquivo da planilha</label>
+      <input id="arquivoPrint" type="file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv">
+    </div>
+    <div id="ocrStatus" class="import-status"></div>
+    <div id="ocrResultado" class="import-result"></div><div id="listaBDsDetectados" class="import-list"></div>
+    <div id="registrosAusentes" class="missing-records">
+      <strong>Registros no banco que não estão na planilha</strong>
+      <p style="margin:8px 0">Deseja excluir estes registros do banco?</p>
+      <div id="listaRegistrosAusentes" class="import-list missing-list"></div>
+      <div class="modal-buttons">
+        <button type="button" class="button button-danger" id="btnExcluirAusentes">Excluir ausentes e importar</button>
+        <button type="button" class="button" id="btnManterAusentes">Manter e importar</button>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button type="button" class="button cancel" id="btnCancelarPrint">Cancelar</button>
+      <button type="button" class="button" id="btnProcessarPrint">Processar arquivo</button><button type="button" class="button import-insert-button" id="btnInserirTodos">Cadastrar itens identificados</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modalHistorico" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="historicoTitle">
+    <div class="modal-title" id="historicoTitle">Histórico do BD</div>
+    <div id="historicoLista" class="history-list">Carregando...</div>
+    <div class="modal-buttons">
+      <button type="button" class="button cancel" id="btnFecharHistorico">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div class="modal confirm-modal" id="modalConfirmacao" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="confirmacaoTitulo" aria-describedby="confirmacaoMensagem">
+    <div class="modal-title" id="confirmacaoTitulo">Confirmar ação</div>
+    <p id="confirmacaoMensagem" class="confirm-message"></p>
+    <div class="modal-buttons">
+      <button type="button" class="button cancel" id="btnCancelarConfirmacao">Cancelar</button>
+      <button type="button" class="button button-danger" id="btnConfirmarAcao">Confirmar exclusão</button>
+    </div>
+  </div>
+</div>
+
+<script src="./assets/js/config.js" defer></script>
+<script src="./assets/vendor/jszip.min.js" defer></script>
+<script src="./assets/js/app.js" defer></script>
+</body>
+</html>
