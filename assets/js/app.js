@@ -1282,6 +1282,16 @@ const colunaBD = localizarColuna(
   ["numero do reparo", "número do reparo", "bd", "reparo"]
 );
 
+const colunaProduto = localizarColuna(
+  cabecalhos,
+  ["produto"]
+);
+
+const colunaCidade = localizarColuna(
+  cabecalhos,
+  ["cidade"]
+);
+
 if (colunaBD === -1) {
   throw new Error(
     "Não encontrei a coluna Número do reparo ou BD."
@@ -1297,7 +1307,15 @@ const linhasImportacao = matriz.slice(1).map(linha => ({
     colunaCliente >= 0
       ? normalizarTexto(linha[colunaCliente])
       : "Secretaria da Educação",
-  bd: normalizarTexto(linha[colunaBD])
+  bd: normalizarTexto(linha[colunaBD]),
+  produto:
+    colunaProduto >= 0
+      ? normalizarTexto(linha[colunaProduto])
+      : "",
+  cidade:
+    colunaCidade >= 0
+      ? normalizarTexto(linha[colunaCidade])
+      : ""
 }));
 
 if (matriz.some(linha => linha.some(celula => String(celula || "").length > LIMITE_CELULA_IMPORTACAO))) {
@@ -1409,14 +1427,14 @@ const { data, hora } = dataHoraPadraoAtual();
 
 const registros = novos.map(item => ({
 grupo: "",
-produto: "",
+produto: item.produto || "",
 bd: item.bd,
 cliente: item.cliente || "Secretaria da Educação",
 status: "",
 data_relatorio: data,
 hora_relatorio: hora,
 prazo: "Até 04H",
-cidade: "",
+cidade: item.cidade || "",
 atualizacao: ""
 }));
 

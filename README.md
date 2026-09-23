@@ -19,7 +19,8 @@ o JavaScript e o leitor de Excel. Para hospedagem, envie o conteúdo inteiro da 
 
 O botão **Importar Excel** aceita arquivos `.xlsx` e `.csv` de até 10 MB. A primeira linha
 precisa conter os cabeçalhos **Cliente** e **Número do reparo** (também aceita `BD`, `Chamado`
-ou `Ticket` como nome da coluna de reparo). Somente essas duas colunas são importadas.
+ou `Ticket` como nome da coluna de reparo). As colunas opcionais **Produto** e **Cidade**
+também são importadas quando presentes.
 
 ## Antes de publicar
 
