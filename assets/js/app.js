@@ -11,6 +11,7 @@ let registrosAusentesImportacao = [];
 let carregandoDados = false;
 let toastTimer = null;
 let confirmacaoPendente = null;
+let erroCarregamento = false;
 const LIMITE_IMPORTACAO_BYTES = 10 * 1024 * 1024;
 const LIMITE_LINHAS_IMPORTACAO = 5000;
 const LIMITE_CELULA_IMPORTACAO = 2000;
@@ -127,6 +128,11 @@ return {
 
 function normalizarTexto(valor) {
 return String(valor || "").trim();
+}
+
+function grupoExibicao(valor) {
+const grupo = normalizarTexto(valor).toUpperCase();
+return ["OM SPI", "O&M SPI"].includes(grupo) ? "O&M SPI" : normalizarTexto(valor);
 }
 
 function mensagemErroPublica(erro, fallback = "Não foi possível concluir a operação.") {
@@ -264,7 +270,8 @@ if (botaoAtualizar) botaoAtualizar.disabled = true;
 atualizarStatusSistema("Atualizando dados...", "loading");
 
 try {
-dadosCache = await carregarDadosOnline();
+  dadosCache = await carregarDadosOnline();
+  erroCarregamento = false;
 
 renderizarTudo();
 atualizarStatusSistema("Sistema operacional", "online");
@@ -275,7 +282,8 @@ atualizarStatusSistema("Sistema operacional", "online");
 } catch (erro) {
 console.error(erro);
 
-dadosCache = [];
+  dadosCache = [];
+  erroCarregamento = true;
 
 renderizarTudo();
 atualizarStatusSistema("Falha na conexão", "offline");
@@ -299,7 +307,7 @@ function atualizarCards() {
 const total = dadosCache.length;
 
 const omspi = dadosCache.filter(
-item => normalizarTexto(item.grupo).toUpperCase() === "O&M SPI"
+item => ["OM SPI", "O&M SPI"].includes(normalizarTexto(item.grupo).toUpperCase())
 ).length;
 
 const swt = dadosCache.filter(
@@ -423,11 +431,11 @@ if (filtroStatus && status !== filtroStatus) return false;
 if (!pesquisa) return true;
 
 const texto = [
-  item.grupo,
+  grupoExibicao(item.grupo),
   item.produto,
   item.bd,
   item.cliente,
-  item.prazo,
+  calcularPrazoAutomatico(item) || item.prazo,
   item.cidade,
   item.status,
   item.atualizacao
@@ -449,9 +457,11 @@ corpo.replaceChildren();
 
 if (filtrados.length === 0) {
 if (vazio) {
-vazio.textContent = dadosCache.length
-? "Nenhum registro corresponde aos filtros."
-: "Nenhum registro cadastrado.";
+  vazio.textContent = erroCarregamento
+  ? "Não foi possível carregar os registros. Tente atualizar novamente."
+  : dadosCache.length
+    ? "Nenhum registro corresponde aos filtros."
+    : "Nenhum registro cadastrado.";
 vazio.style.display = "block";
 }
 return;
@@ -465,7 +475,7 @@ const prazo = calcularPrazoAutomatico(item) || item.prazo || "";
 const linha = document.createElement("tr");
 
 const valores = [
-  item.grupo,
+  grupoExibicao(item.grupo),
   item.produto,
   item.bd,
   item.cliente,
@@ -579,6 +589,7 @@ if ($("hora_relatorio")) $("hora_relatorio").value = hora;
 if ($("cliente")) {
 $("cliente").value = "Secretaria da Educação";
 }
+  atualizarPrazoFormulario();
 }
 
 function abrirNovo() {
@@ -631,7 +642,7 @@ if ($("modalTitle")) {
 $("modalTitle").textContent = "Editar reparo";
 }
 
-if ($("grupo")) $("grupo").value = item.grupo || "";
+if ($("grupo")) $("grupo").value = grupoExibicao(item.grupo);
 if ($("produto")) $("produto").value = item.produto || "";
 if ($("bd")) $("bd").value = item.bd || "";
 if ($("cliente")) $("cliente").value = item.cliente || "";
@@ -642,6 +653,8 @@ $("hora_relatorio").value = formatarHora(item.hora_relatorio);
 }
 if ($("cidade")) $("cidade").value = item.cidade || "";
 if ($("atualizacao")) $("atualizacao").value = item.atualizacao || "";
+
+atualizarPrazoFormulario();
 
 abrirModal();
 }
@@ -666,6 +679,19 @@ atualizacao: normalizarTexto($("atualizacao")?.value)
 registro.prazo = calcularPrazoAutomatico(registro);
 
 return registro;
+}
+
+function atualizarPrazoFormulario() {
+  const prazo = $("prazo");
+  if (!prazo) return;
+
+  const registro = {
+    data_relatorio: normalizarTexto($("data_relatorio")?.value),
+    hora_relatorio: normalizarTexto($("hora_relatorio")?.value)
+  };
+
+  prazo.textContent = calcularPrazoAutomatico(registro)
+    || "Será calculado ao informar a abertura.";
 }
 
 function validarRegistro(registro) {
@@ -1116,6 +1142,9 @@ const extensaoValida = /\.(xlsx|csv)$/.test(nome);
 const tipoValido = [
   "",
   "text/csv",
+  "application/csv",
+  "application/vnd.ms-excel",
+  "application/zip",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 ].includes(arquivo.type);
 
@@ -1229,7 +1258,15 @@ const linhas = [];
       valor = sharedStrings[Number(valor)] || "";
     }
 
-    valores.push(valor);
+    const referencia = celula.getAttribute("r") || "";
+    const coluna = referencia.match(/^[A-Z]+/i)?.[0] || "";
+    let indice = 0;
+
+    for (const caractere of coluna.toUpperCase()) {
+      indice = indice * 26 + caractere.charCodeAt(0) - 64;
+    }
+
+    valores[Math.max(indice - 1, 0)] = valor;
   });
 
   linhas.push(valores);
@@ -1398,8 +1435,10 @@ console.error(erro);
 
 if ($("ocrStatus")) {
   $("ocrStatus").textContent =
-    "Não foi possível processar o arquivo.";
+    erro?.message || "Não foi possível processar o arquivo.";
 }
+
+mostrarToast(erro?.message || "Não foi possível processar o arquivo.", "error");
 
 }
 }
@@ -1643,10 +1682,12 @@ if (evento.key === "Escape") {
 });
 
 $("data_relatorio")?.addEventListener("change", () => {
+atualizarPrazoFormulario();
 renderizarTabela();
 });
 
 $("hora_relatorio")?.addEventListener("change", () => {
+atualizarPrazoFormulario();
 renderizarTabela();
 });
 
@@ -1680,6 +1721,7 @@ console.error(
 );
 
 mostrarToast("Erro de configuração. Verifique a URL e a chave pública do Supabase.", "error");
+atualizarStatusSistema("Configuração ausente", "offline");
 
 return;
 

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#660099">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
 <title>Dashboard de BDs</title>
@@ -20,21 +20,31 @@
 
 <header class="header">
 
-<div>
-<h1>RELATÓRIO DIÁRIO DE BDs</h1>
-<p>Acompanhamento dos reparos — Secretaria da Educação</p>
+<div class="brand-block">
+<div class="eyebrow"><span class="eyebrow-mark"></span> CENTRAL DE OPERAÇÕES</div>
+<h1>Relatório diário de BDs</h1>
+<p>Acompanhamento de reparos da Secretaria da Educação</p>
 </div>
 
 <div class="header-meta"><div class="date-card"><small>DATA</small><strong id="currentDate">--/--/----</strong></div><div class="date-card"><small>ÚLTIMA ATUALIZAÇÃO</small><strong id="lastUpdate">--:--</strong></div></div>
 <button type="button" class="theme-toggle" id="btnTema" aria-pressed="false" aria-label="Ativar modo escuro"><span class="theme-icon" aria-hidden="true">☾</span><span class="theme-label">Modo escuro</span></button>
-<div class="system">
+<div class="system" title="Status da conexão com o sistema">
 <span class="dot"></span>
  <span id="systemStatus">Sistema operacional</span>
 </div>
 
 </header>
 
-<section class="cards">
+<section class="section-block" aria-labelledby="overviewTitle">
+<div class="section-heading">
+<div>
+<div class="eyebrow">VISÃO GERAL</div>
+<h2 id="overviewTitle">Panorama dos reparos</h2>
+</div>
+<span class="section-note">Atualização em tempo real</span>
+</div>
+
+<div class="cards">
 
 <div class="card">
 <div class="card-top">
@@ -47,11 +57,11 @@
 
 <div class="card">
 <div class="card-top">
-<span class="card-title">O&M SPI</span>
+<span class="card-title">O&amp;M SPI</span>
 <span class="icon">O</span>
 </div>
 <div class="card-number" id="totalOMSPI">0</div>
-<div class="card-sub">Reparos O&M SPI</div>
+<div class="card-sub">Reparos O&amp;M SPI</div>
 </div>
 
 <div class="card">
@@ -171,6 +181,12 @@ Sem previsão
 
 <div class="controls">
 
+<div class="controls-heading">
+<strong>Lista de reparos</strong>
+<span>Pesquise ou refine os registros abaixo</span>
+</div>
+
+<label class="sr-only" for="pesquisa">Pesquisar reparos</label>
 <input
 id="pesquisa"
 class="search"
@@ -186,12 +202,14 @@ placeholder="Pesquisar Grupo, Produto, BD, Cliente, Prazo, Cidade ou Atualizaç�
 <option value="Sem previsão">Sem previsão</option>
 </select>
 
-<button type="button" class="button button-light" id="btnLimparPesquisa">Limpar</button>
+<button type="button" class="button button-light" id="btnLimparPesquisa">Limpar filtros</button>
 
+<div class="controls-actions">
 <button type="button" class="button" id="btnNovo">+ Cadastrar reparo</button>
 <button type="button" class="button" id="btnAnalisarPrint">Importar Excel</button>
 <button type="button" class="button" id="btnAtualizar">Atualizar</button>
 <button type="button" class="button button-danger" id="btnExcluirTodos">Excluir todos os reparos</button>
+</div>
 
 </div>
 
@@ -201,18 +219,20 @@ placeholder="Pesquisar Grupo, Produto, BD, Cliente, Prazo, Cidade ou Atualizaç�
 
 <table>
 
+<caption class="sr-only">Lista de reparos cadastrados</caption>
+
 <thead>
 <tr>
-<th>GRUPO</th>
-<th>PRODUTO</th>
-<th>BD</th>
-<th>CLIENTE</th>
-<th>PRAZO</th>
-<th>CIDADE</th>
-<th>STATUS</th>
-<th>DATA/HORA</th>
-<th>ATUALIZAÇÃO</th>
-<th>AÇÕES</th>
+<th scope="col">GRUPO</th>
+<th scope="col">PRODUTO</th>
+<th scope="col">BD</th>
+<th scope="col">CLIENTE</th>
+<th scope="col">PRAZO</th>
+<th scope="col">CIDADE</th>
+<th scope="col">STATUS</th>
+<th scope="col">DATA/HORA</th>
+<th scope="col">ATUALIZAÇÃO</th>
+<th scope="col">AÇÕES</th>
 </tr>
 </thead>
 
@@ -265,8 +285,8 @@ Grupo responsável
 Selecione
 </option>
 
-<option value="O&M SPI">
-O&M SPI
+<option value="O&amp;M SPI">
+O&amp;M SPI
 </option>
 
 <option value="SWT">
@@ -339,9 +359,11 @@ value="Secretaria da Educação"
 </div>
 
 <div class="form-group">
-<label>Data e hora de abertura</label>
+<span class="form-label">Data e hora de abertura</span>
 <div class="date-time-row">
+<label class="sr-only" for="data_relatorio">Data de abertura</label>
 <input id="data_relatorio" type="date">
+<label class="sr-only" for="hora_relatorio">Hora de abertura</label>
 <input id="hora_relatorio" type="time">
 </div>
 
@@ -353,10 +375,7 @@ value="Secretaria da Educação"
 <label for="prazo">
 Prazo calculado automaticamente
 </label>
-
-
-
-
+<output id="prazo" class="calculated-field" for="data_relatorio hora_relatorio">Será calculado ao informar a abertura.</output>
 
 </div>
 
@@ -417,8 +436,8 @@ Salvar reparo
 
 
 <div class="modal" id="modalPrint" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-modal="true">
-    <div class="modal-title">Importar reparos do Excel</div>
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+    <div class="modal-title" id="importTitle">Importar reparos do Excel</div>
     <p class="ocr-help">Selecione uma planilha Excel (.xlsx) ou CSV. Serão importadas as colunas <b>Cliente</b>, <b>Número do reparo</b> (ou BD), <b>Produto</b> e <b>Cidade</b>. Os demais dados permanecem em branco para preenchimento posterior.</p>
     <div class="form-group">
       <label for="arquivoPrint">Arquivo da planilha</label>
